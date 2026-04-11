@@ -86,6 +86,19 @@ struct pbWidgetEntryView : View {
     let textBoxColor = Color(hex: "F7F6E5")
     let textColor = Color.black
 
+    func calculatePace(time: SavedTime?, distance: String) -> (min: String, sec: String) {
+        guard let t = time,
+              let dist = Double(distance.replacingOccurrences(of: "k", with: "")) else {
+            return ("--", "--")
+        }
+        let totalSeconds = Double(t.hour * 3600 + t.minute * 60 + t.second)
+        guard totalSeconds > 0 && dist > 0 else { return ("--", "--") }
+        let paceSeconds = totalSeconds / dist
+        let pMin = Int(paceSeconds) / 60
+        let pSec = Int(paceSeconds) % 60
+        return (String(format: "%02d", pMin), String(format: "%02d", pSec))
+    }
+
     var body: some View {
         VStack(spacing: 8) {
             ForEach(distances, id: \.0) { item in
@@ -113,6 +126,24 @@ struct pbWidgetEntryView : View {
                         Text(":")
                         Text(s)
                             .frame(width: 18)
+                    }
+                    .font(.system(size: 11, weight: .bold, design: .monospaced))
+                    .foregroundColor(textColor)
+                    .padding(.horizontal, 8)
+                    .frame(height: 20)
+                    .background(textBoxColor)
+                    .cornerRadius(6)
+                    
+                    HStack(spacing: 2) {
+                        let time = entry.savedTimes[item.0]
+                        let paceStr = calculatePace(time: time, distance: item.0)
+                        
+                        Text(paceStr.min)
+                            .frame(width: 18)
+                        Text("'")
+                        Text(paceStr.sec)
+                            .frame(width: 18)
+                        Text("\"")
                     }
                     .font(.system(size: 11, weight: .bold, design: .monospaced))
                     .foregroundColor(textColor)
