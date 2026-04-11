@@ -107,12 +107,12 @@
 		44EF4C922F82A86B00EE8F8E = {
 			isa = PBXGroup;
 			children = (
-				444016362F8A4C3800280B42 /* notemeWidgetExtension.entitlements */,
 				44EF4C9D2F82A86B00EE8F8E /* noteme */,
 				444015DD2F8953F900280B42 /* notemeWidget */,
 				444015D82F8953F900280B42 /* Frameworks */,
 				44EF4C9C2F82A86B00EE8F8E /* Products */,
 				444016302F8A38B200280B42 /* ref */,
+				444016362F8A4C3800280B42 /* notemeWidgetExtension.entitlements */,
 			);
 			sourceTree = "<group>";
 		};
