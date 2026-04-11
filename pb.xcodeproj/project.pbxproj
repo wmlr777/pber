@@ -9,7 +9,7 @@
 /* Begin PBXBuildFile section */
 		444015DA2F8953F900280B42 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 444015D92F8953F900280B42 /* WidgetKit.framework */; };
 		444015DC2F8953F900280B42 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 444015DB2F8953F900280B42 /* SwiftUI.framework */; };
-		444015ED2F8953FA00280B42 /* notemeWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 444015D72F8953F900280B42 /* notemeWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		444015ED2F8953FA00280B42 /* pbWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 444015D72F8953F900280B42 /* pbWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -18,7 +18,7 @@
 			containerPortal = 44EF4C932F82A86B00EE8F8E /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 444015D62F8953F900280B42;
-			remoteInfo = notemeWidgetExtension;
+			remoteInfo = pbWidgetExtension;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -29,7 +29,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				444015ED2F8953FA00280B42 /* notemeWidgetExtension.appex in Embed Foundation Extensions */,
+				444015ED2F8953FA00280B42 /* pbWidgetExtension.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -37,30 +37,30 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		444015D72F8953F900280B42 /* notemeWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = notemeWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		444015D72F8953F900280B42 /* pbWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = pbWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		444015D92F8953F900280B42 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		444015DB2F8953F900280B42 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
-		444016362F8A4C3800280B42 /* notemeWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = notemeWidgetExtension.entitlements; sourceTree = "<group>"; };
-		44EF4C9B2F82A86B00EE8F8E /* noteme.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = noteme.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		444016362F8A4C3800280B42 /* pbWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = pbWidgetExtension.entitlements; sourceTree = "<group>"; };
+		44EF4C9B2F82A86B00EE8F8E /* pb.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = pb.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		444015EE2F8953FA00280B42 /* Exceptions for "notemeWidget" folder in "notemeWidgetExtension" target */ = {
+		444015EE2F8953FA00280B42 /* Exceptions for "pbWidget" folder in "pbWidgetExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
-			target = 444015D62F8953F900280B42 /* notemeWidgetExtension */;
+			target = 444015D62F8953F900280B42 /* pbWidgetExtension */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		444015DD2F8953F900280B42 /* notemeWidget */ = {
+		444015DD2F8953F900280B42 /* pbWidget */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				444015EE2F8953FA00280B42 /* Exceptions for "notemeWidget" folder in "notemeWidgetExtension" target */,
+				444015EE2F8953FA00280B42 /* Exceptions for "pbWidget" folder in "pbWidgetExtension" target */,
 			);
-			path = notemeWidget;
+			path = pbWidget;
 			sourceTree = "<group>";
 		};
 		444016302F8A38B200280B42 /* ref */ = {
@@ -68,9 +68,9 @@
 			path = ref;
 			sourceTree = "<group>";
 		};
-		44EF4C9D2F82A86B00EE8F8E /* noteme */ = {
+		44EF4C9D2F82A86B00EE8F8E /* pb */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = noteme;
+			path = pb;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -107,20 +107,20 @@
 		44EF4C922F82A86B00EE8F8E = {
 			isa = PBXGroup;
 			children = (
-				44EF4C9D2F82A86B00EE8F8E /* noteme */,
-				444015DD2F8953F900280B42 /* notemeWidget */,
+				44EF4C9D2F82A86B00EE8F8E /* pb */,
+				444015DD2F8953F900280B42 /* pbWidget */,
 				444015D82F8953F900280B42 /* Frameworks */,
 				44EF4C9C2F82A86B00EE8F8E /* Products */,
 				444016302F8A38B200280B42 /* ref */,
-				444016362F8A4C3800280B42 /* notemeWidgetExtension.entitlements */,
+				444016362F8A4C3800280B42 /* pbWidgetExtension.entitlements */,
 			);
 			sourceTree = "<group>";
 		};
 		44EF4C9C2F82A86B00EE8F8E /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				44EF4C9B2F82A86B00EE8F8E /* noteme.app */,
-				444015D72F8953F900280B42 /* notemeWidgetExtension.appex */,
+				44EF4C9B2F82A86B00EE8F8E /* pb.app */,
+				444015D72F8953F900280B42 /* pbWidgetExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -128,9 +128,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		444015D62F8953F900280B42 /* notemeWidgetExtension */ = {
+		444015D62F8953F900280B42 /* pbWidgetExtension */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 444015EF2F8953FA00280B42 /* Build configuration list for PBXNativeTarget "notemeWidgetExtension" */;
+			buildConfigurationList = 444015EF2F8953FA00280B42 /* Build configuration list for PBXNativeTarget "pbWidgetExtension" */;
 			buildPhases = (
 				444015D32F8953F900280B42 /* Sources */,
 				444015D42F8953F900280B42 /* Frameworks */,
@@ -141,18 +141,18 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				444015DD2F8953F900280B42 /* notemeWidget */,
+				444015DD2F8953F900280B42 /* pbWidget */,
 			);
-			name = notemeWidgetExtension;
+			name = pbWidgetExtension;
 			packageProductDependencies = (
 			);
-			productName = notemeWidgetExtension;
-			productReference = 444015D72F8953F900280B42 /* notemeWidgetExtension.appex */;
+			productName = pbWidgetExtension;
+			productReference = 444015D72F8953F900280B42 /* pbWidgetExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
-		44EF4C9A2F82A86B00EE8F8E /* noteme */ = {
+		44EF4C9A2F82A86B00EE8F8E /* pb */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 44EF4CA62F82A86C00EE8F8E /* Build configuration list for PBXNativeTarget "noteme" */;
+			buildConfigurationList = 44EF4CA62F82A86C00EE8F8E /* Build configuration list for PBXNativeTarget "pb" */;
 			buildPhases = (
 				44EF4C972F82A86B00EE8F8E /* Sources */,
 				44EF4C982F82A86B00EE8F8E /* Frameworks */,
@@ -166,13 +166,13 @@
 			);
 			fileSystemSynchronizedGroups = (
 				444016302F8A38B200280B42 /* ref */,
-				44EF4C9D2F82A86B00EE8F8E /* noteme */,
+				44EF4C9D2F82A86B00EE8F8E /* pb */,
 			);
-			name = noteme;
+			name = pb;
 			packageProductDependencies = (
 			);
-			productName = noteme;
-			productReference = 44EF4C9B2F82A86B00EE8F8E /* noteme.app */;
+			productName = pb;
+			productReference = 44EF4C9B2F82A86B00EE8F8E /* pb.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -193,7 +193,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 44EF4C962F82A86B00EE8F8E /* Build configuration list for PBXProject "noteme" */;
+			buildConfigurationList = 44EF4C962F82A86B00EE8F8E /* Build configuration list for PBXProject "pb" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -207,8 +207,8 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				44EF4C9A2F82A86B00EE8F8E /* noteme */,
-				444015D62F8953F900280B42 /* notemeWidgetExtension */,
+				44EF4C9A2F82A86B00EE8F8E /* pb */,
+				444015D62F8953F900280B42 /* pbWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -250,7 +250,7 @@
 /* Begin PBXTargetDependency section */
 		444015EC2F8953FA00280B42 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 444015D62F8953F900280B42 /* notemeWidgetExtension */;
+			target = 444015D62F8953F900280B42 /* pbWidgetExtension */;
 			targetProxy = 444015EB2F8953FA00280B42 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -261,13 +261,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
-				CODE_SIGN_ENTITLEMENTS = notemeWidgetExtension.entitlements;
+				CODE_SIGN_ENTITLEMENTS = pbWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 6LFCV5GRX7;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = notemeWidget/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = notemeWidget;
+				INFOPLIST_FILE = pbWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = pbWidget;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -275,7 +275,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.mowen.noteme.notemeWidget;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mowen.pb.pbWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -292,13 +292,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
-				CODE_SIGN_ENTITLEMENTS = notemeWidgetExtension.entitlements;
+				CODE_SIGN_ENTITLEMENTS = pbWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 6LFCV5GRX7;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = notemeWidget/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = notemeWidget;
+				INFOPLIST_FILE = pbWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = pbWidget;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -306,7 +306,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.mowen.noteme.notemeWidget;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mowen.pb.pbWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -444,7 +444,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = noteme/noteme.entitlements;
+				CODE_SIGN_ENTITLEMENTS = pb/pb.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 6LFCV5GRX7;
@@ -460,7 +460,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.mowen.noteme;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mowen.pb;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -477,7 +477,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = noteme/noteme.entitlements;
+				CODE_SIGN_ENTITLEMENTS = pb/pb.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 6LFCV5GRX7;
@@ -493,7 +493,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.mowen.noteme;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mowen.pb;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -508,7 +508,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		444015EF2F8953FA00280B42 /* Build configuration list for PBXNativeTarget "notemeWidgetExtension" */ = {
+		444015EF2F8953FA00280B42 /* Build configuration list for PBXNativeTarget "pbWidgetExtension" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				444015F02F8953FA00280B42 /* Debug */,
@@ -517,7 +517,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		44EF4C962F82A86B00EE8F8E /* Build configuration list for PBXProject "noteme" */ = {
+		44EF4C962F82A86B00EE8F8E /* Build configuration list for PBXProject "pb" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				44EF4CA42F82A86C00EE8F8E /* Debug */,
@@ -526,7 +526,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		44EF4CA62F82A86C00EE8F8E /* Build configuration list for PBXNativeTarget "noteme" */ = {
+		44EF4CA62F82A86C00EE8F8E /* Build configuration list for PBXNativeTarget "pb" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				44EF4CA72F82A86C00EE8F8E /* Debug */,

@@ -16,9 +16,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "44EF4C9A2F82A86B00EE8F8E"
-               BuildableName = "noteme.app"
-               BlueprintName = "noteme"
-               ReferencedContainer = "container:noteme.xcodeproj">
+               BuildableName = "pb.app"
+               BlueprintName = "pb"
+               ReferencedContainer = "container:pb.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -45,9 +45,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "44EF4C9A2F82A86B00EE8F8E"
-            BuildableName = "noteme.app"
-            BlueprintName = "noteme"
-            ReferencedContainer = "container:noteme.xcodeproj">
+            BuildableName = "pb.app"
+            BlueprintName = "pb"
+            ReferencedContainer = "container:pb.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -62,9 +62,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "44EF4C9A2F82A86B00EE8F8E"
-            BuildableName = "noteme.app"
-            BlueprintName = "noteme"
-            ReferencedContainer = "container:noteme.xcodeproj">
+            BuildableName = "pb.app"
+            BlueprintName = "pb"
+            ReferencedContainer = "container:pb.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

@@ -40,10 +40,10 @@ struct SavedTime: Codable {
 class TimeStorageManager: ObservableObject {
     @Published var savedTimes: [String: SavedTime] = [:]
     
-    private let fileName = "noteme_time_setting.json"
+    private let fileName = "pb_time_setting.json"
     
     private var fileURL: URL? {
-        let container = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.noteme.shared")
+        let container = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.pb.shared")
         return container?.appendingPathComponent(fileName)
     }
     

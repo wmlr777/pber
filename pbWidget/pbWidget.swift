@@ -52,8 +52,8 @@ struct Provider: AppIntentTimelineProvider {
     }
     
     private func loadSavedTimes() -> [String: SavedTime] {
-        let fileName = "noteme_time_setting.json"
-        guard let container = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.noteme.shared") else { return [:] }
+        let fileName = "pb_time_setting.json"
+        guard let container = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.pb.shared") else { return [:] }
         let fileURL = container.appendingPathComponent(fileName)
         do {
             if FileManager.default.fileExists(atPath: fileURL.path) {
@@ -73,7 +73,7 @@ struct SimpleEntry: TimelineEntry {
     let savedTimes: [String: SavedTime]
 }
 
-struct notemeWidgetEntryView : View {
+struct pbWidgetEntryView : View {
     var entry: Provider.Entry
 
     let distances = [
@@ -126,12 +126,12 @@ struct notemeWidgetEntryView : View {
     }
 }
 
-struct notemeWidget: Widget {
-    let kind: String = "notemeWidget"
+struct pbWidget: Widget {
+    let kind: String = "pbWidget"
 
     var body: some WidgetConfiguration {
         AppIntentConfiguration(kind: kind, intent: ConfigurationAppIntent.self, provider: Provider()) { entry in
-            notemeWidgetEntryView(entry: entry)
+            pbWidgetEntryView(entry: entry)
                 .containerBackground(Color(hex: "070303"), for: .widget)
         }
         .supportedFamilies([.systemMedium])
@@ -149,7 +149,7 @@ extension ConfigurationAppIntent {
 }
 
 #Preview(as: .systemMedium) {
-    notemeWidget()
+    pbWidget()
 } timeline: {
     SimpleEntry(date: .now, configuration: .smiley, savedTimes: [:])
 }

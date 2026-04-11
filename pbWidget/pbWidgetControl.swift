@@ -1,6 +1,6 @@
 //
-//  notemeWidgetControl.swift
-//  notemeWidget
+//  pbWidgetControl.swift
+//  pbWidget
 //
 //  Created by wenmo on 2026/4/10.
 //
@@ -9,8 +9,8 @@ import AppIntents
 import SwiftUI
 import WidgetKit
 
-struct notemeWidgetControl: ControlWidget {
-    static let kind: String = "com.mowen.noteme.notemeWidget"
+struct pbWidgetControl: ControlWidget {
+    static let kind: String = "com.mowen.pb.pbWidget"
 
     var body: some ControlWidgetConfiguration {
         AppIntentControlConfiguration(
@@ -30,7 +30,7 @@ struct notemeWidgetControl: ControlWidget {
     }
 }
 
-extension notemeWidgetControl {
+extension pbWidgetControl {
     struct Value {
         var isRunning: Bool
         var name: String
@@ -38,12 +38,12 @@ extension notemeWidgetControl {
 
     struct Provider: AppIntentControlValueProvider {
         func previewValue(configuration: TimerConfiguration) -> Value {
-            notemeWidgetControl.Value(isRunning: false, name: configuration.timerName)
+            pbWidgetControl.Value(isRunning: false, name: configuration.timerName)
         }
 
         func currentValue(configuration: TimerConfiguration) async throws -> Value {
             let isRunning = true // Check if the timer is running
-            return notemeWidgetControl.Value(isRunning: isRunning, name: configuration.timerName)
+            return pbWidgetControl.Value(isRunning: isRunning, name: configuration.timerName)
         }
     }
 }

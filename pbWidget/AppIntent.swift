@@ -1,6 +1,6 @@
 //
 //  AppIntent.swift
-//  notemeWidget
+//  pbWidget
 //
 //  Created by wenmo on 2026/4/10.
 //

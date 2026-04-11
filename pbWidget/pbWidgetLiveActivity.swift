@@ -1,6 +1,6 @@
 //
-//  notemeWidgetLiveActivity.swift
-//  notemeWidget
+//  pbWidgetLiveActivity.swift
+//  pbWidget
 //
 //  Created by wenmo on 2026/4/10.
 //
@@ -9,7 +9,7 @@ import ActivityKit
 import WidgetKit
 import SwiftUI
 
-struct notemeWidgetAttributes: ActivityAttributes {
+struct pbWidgetAttributes: ActivityAttributes {
     public struct ContentState: Codable, Hashable {
         // Dynamic stateful properties about your activity go here!
         var emoji: String
@@ -19,9 +19,9 @@ struct notemeWidgetAttributes: ActivityAttributes {
     var name: String
 }
 
-struct notemeWidgetLiveActivity: Widget {
+struct pbWidgetLiveActivity: Widget {
     var body: some WidgetConfiguration {
-        ActivityConfiguration(for: notemeWidgetAttributes.self) { context in
+        ActivityConfiguration(for: pbWidgetAttributes.self) { context in
             // Lock screen/banner UI goes here
             VStack {
                 Text("Hello \(context.state.emoji)")
@@ -56,25 +56,25 @@ struct notemeWidgetLiveActivity: Widget {
     }
 }
 
-extension notemeWidgetAttributes {
-    fileprivate static var preview: notemeWidgetAttributes {
-        notemeWidgetAttributes(name: "World")
+extension pbWidgetAttributes {
+    fileprivate static var preview: pbWidgetAttributes {
+        pbWidgetAttributes(name: "World")
     }
 }
 
-extension notemeWidgetAttributes.ContentState {
-    fileprivate static var smiley: notemeWidgetAttributes.ContentState {
-        notemeWidgetAttributes.ContentState(emoji: "😀")
+extension pbWidgetAttributes.ContentState {
+    fileprivate static var smiley: pbWidgetAttributes.ContentState {
+        pbWidgetAttributes.ContentState(emoji: "😀")
      }
      
-     fileprivate static var starEyes: notemeWidgetAttributes.ContentState {
-         notemeWidgetAttributes.ContentState(emoji: "🤩")
+     fileprivate static var starEyes: pbWidgetAttributes.ContentState {
+         pbWidgetAttributes.ContentState(emoji: "🤩")
      }
 }
 
-#Preview("Notification", as: .content, using: notemeWidgetAttributes.preview) {
-   notemeWidgetLiveActivity()
+#Preview("Notification", as: .content, using: pbWidgetAttributes.preview) {
+   pbWidgetLiveActivity()
 } contentStates: {
-    notemeWidgetAttributes.ContentState.smiley
-    notemeWidgetAttributes.ContentState.starEyes
+    pbWidgetAttributes.ContentState.smiley
+    pbWidgetAttributes.ContentState.starEyes
 }
