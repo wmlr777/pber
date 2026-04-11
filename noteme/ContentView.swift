@@ -1,5 +1,6 @@
 import SwiftUI
 import Combine
+import WidgetKit
 
 // MARK: - Color Extension
 extension Color {
@@ -41,9 +42,9 @@ class TimeStorageManager: ObservableObject {
     
     private let fileName = "noteme_time_setting.json"
     
-    private var fileURL: URL {
-        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
-        return paths[0].appendingPathComponent(fileName)
+    private var fileURL: URL? {
+        let container = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.noteme.shared")
+        return container?.appendingPathComponent(fileName)
     }
     
     init() {
@@ -51,9 +52,10 @@ class TimeStorageManager: ObservableObject {
     }
     
     func loadTime() {
+        guard let url = fileURL else { return }
         do {
-            if FileManager.default.fileExists(atPath: fileURL.path) {
-                let data = try Data(contentsOf: fileURL)
+            if FileManager.default.fileExists(atPath: url.path) {
+                let data = try Data(contentsOf: url)
                 let times = try JSONDecoder().decode([String: SavedTime].self, from: data)
                 self.savedTimes = times
             }
@@ -73,9 +75,13 @@ class TimeStorageManager: ObservableObject {
     }
     
     private func saveToFile() {
+        guard let url = fileURL else { return }
         do {
             let data = try JSONEncoder().encode(savedTimes)
-            try data.write(to: fileURL)
+            try data.write(to: url)
+            #if canImport(WidgetKit)
+            WidgetCenter.shared.reloadAllTimelines()
+            #endif
         } catch {
             print("Failed to save time: \(error)")
         }
