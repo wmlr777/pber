@@ -1,9 +1,27 @@
 import SwiftUI
 
+// MARK: - Skewed Rectangle Shape
+struct SkewedRectangle: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        // 倾斜的偏移量
+        let offset: CGFloat = 4
+        
+        path.move(to: CGPoint(x: offset, y: 0))
+        path.addLine(to: CGPoint(x: rect.maxX, y: 0))
+        path.addLine(to: CGPoint(x: rect.maxX - offset, y: rect.maxY))
+        path.addLine(to: CGPoint(x: 0, y: rect.maxY))
+        path.closeSubpath()
+        
+        return path
+    }
+}
+
 // MARK: - Distance Time Row
 struct DistanceTimeRow: View {
     let distance: String
     let distanceColor: Color
+    let boxWidth: CGFloat
     @ObservedObject var storageManager: TimeStorageManager
     
     @State private var hourStr: String = ""
@@ -14,16 +32,21 @@ struct DistanceTimeRow: View {
     let textColor = Color.black
     
     var body: some View {
-        HStack {
+        HStack(spacing: 10) {
             // Left Distance Box
             Text(distance)
                 .font(.system(size: 14, weight: .bold))
+                .italic()
                 .foregroundColor(.black)
-                .frame(width: 80, height: 36)
-                .background(distanceColor)
-                .cornerRadius(8)
-            
-            Spacer()
+                .frame(width: boxWidth, height: 36)
+                .background(
+                    SkewedRectangle()
+                        .fill(distanceColor)
+                        .overlay(
+                            SkewedRectangle()
+                                .stroke(Color.white, lineWidth: 2)
+                        )
+                )
             
             // Right Editable Time Boxes inside a single long box
             HStack(spacing: 4) {
@@ -37,10 +60,13 @@ struct DistanceTimeRow: View {
                     .font(.system(size: 16, weight: .bold))
                 timeField(text: $secStr)
             }
-            .padding(.horizontal, 16)
-            .frame(width: 250, height: 36)
-            .background(textBoxColor)
-            .cornerRadius(8)
+            .padding(.horizontal, 24)
+            // 将内容向右对齐，确保所有行的数字能在垂直方向上对齐
+            .frame(maxWidth: .infinity, minHeight: 36, alignment: .trailing)
+            .background(
+                SkewedRectangle()
+                    .fill(textBoxColor)
+            )
         }
         .onAppear {
             if let t = storageManager.savedTimes[distance] {
@@ -83,12 +109,12 @@ struct TimeRecordsView: View {
     let bgColor = Color(hex: "070303")
     let circleColor = Color(hex: "FFF6F6")
     
-    let distances = [
-        ("1k", Color(hex: "A0D585")),
-        ("5k", Color(hex: "F9F6C4")),
-        ("10k", Color(hex: "FE9EC7")),
-        ("21.0975k", Color(hex: "AACDDC")),
-        ("42.195k", Color(hex: "81A6C6"))
+    let distances: [(String, Color, CGFloat)] = [
+        ("1k", Color(hex: "A0D585"), 40),
+        ("5k", Color(hex: "F9F6C4"), 50),
+        ("10k", Color(hex: "FE9EC7"), 60),
+        ("21.0975k", Color(hex: "AACDDC"), 70),
+        ("42.195k", Color(hex: "81A6C6"), 80)
     ]
     
     var body: some View {
@@ -110,6 +136,7 @@ struct TimeRecordsView: View {
                         DistanceTimeRow(
                             distance: item.0,
                             distanceColor: item.1,
+                            boxWidth: item.2,
                             storageManager: storageManager
                         )
                     }
