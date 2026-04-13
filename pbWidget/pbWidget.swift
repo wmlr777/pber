@@ -28,6 +28,22 @@ extension Color {
     }
 }
 
+// MARK: - Skewed Rectangle Shape
+struct SkewedRectangle: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let offset: CGFloat = 3
+        
+        path.move(to: CGPoint(x: offset, y: 0))
+        path.addLine(to: CGPoint(x: rect.maxX, y: 0))
+        path.addLine(to: CGPoint(x: rect.maxX - offset, y: rect.maxY))
+        path.addLine(to: CGPoint(x: 0, y: rect.maxY))
+        path.closeSubpath()
+        
+        return path
+    }
+}
+
 // MARK: - Time Model
 struct SavedTime: Codable {
     var hour: Int
@@ -76,12 +92,12 @@ struct SimpleEntry: TimelineEntry {
 struct pbWidgetEntryView : View {
     var entry: Provider.Entry
 
-    let distances = [
-        ("1k", Color(hex: "A0D585")),
-        ("5k", Color(hex: "F9F6C4")),
-        ("10k", Color(hex: "FE9EC7")),
-        ("21.0975k", Color(hex: "AACDDC")),
-        ("42.195k", Color(hex: "81A6C6"))
+    let distances: [(String, Color, CGFloat)] = [
+        ("1k", Color(hex: "A0D585"), 30),
+        ("5k", Color(hex: "F9F6C4"), 38),
+        ("10k", Color(hex: "FE9EC7"), 46),
+        ("21.0975k", Color(hex: "AACDDC"), 54),
+        ("42.195k", Color(hex: "81A6C6"), 62)
     ]
     let textBoxColor = Color(hex: "F7F6E5")
     let textColor = Color.black
@@ -102,55 +118,64 @@ struct pbWidgetEntryView : View {
     var body: some View {
         VStack(spacing: 8) {
             ForEach(distances, id: \.0) { item in
-                HStack {
+                HStack(spacing: 8) {
+                    // Left Distance Box
                     Text(item.0)
                         .font(.system(size: 11, weight: .bold))
+                        .italic()
                         .foregroundColor(.black)
-                        .frame(width: 60, height: 20)
-                        .background(item.1)
-                        .cornerRadius(6)
+                        .frame(width: item.2, height: 20)
+                        .background(
+                            SkewedRectangle()
+                                .fill(item.1)
+                                .overlay(
+                                    SkewedRectangle()
+                                        .stroke(Color.white, lineWidth: 1.5)
+                                )
+                        )
                     
-                    Spacer()
-                    
-                    HStack(spacing: 2) {
-                        let time = entry.savedTimes[item.0]
-                        let h = time.map { String(format: "%02d", $0.hour) } ?? "--"
-                        let m = time.map { String(format: "%02d", $0.minute) } ?? "--"
-                        let s = time.map { String(format: "%02d", $0.second) } ?? "--"
+                    // Right Boxes (Time and Pace)
+                    HStack(spacing: 8) {
+                        // Time Box
+                        HStack(spacing: 0) {
+                            let time = entry.savedTimes[item.0]
+                            let h = time.map { String(format: "%02d", $0.hour) } ?? "--"
+                            let m = time.map { String(format: "%02d", $0.minute) } ?? "--"
+                            let s = time.map { String(format: "%02d", $0.second) } ?? "--"
+                            
+                            Text(h).frame(width: 14)
+                            Text(":")
+                            Text(m).frame(width: 14)
+                            Text(":")
+                            Text(s).frame(width: 14)
+                        }
+                        .font(.system(size: 11, weight: .bold, design: .monospaced))
+                        .foregroundColor(textColor)
+                        .padding(.horizontal, 8)
+                        .frame(maxWidth: .infinity, minHeight: 20, alignment: .center)
+                        .background(
+                            SkewedRectangle().fill(textBoxColor)
+                        )
                         
-                        Text(h)
-                            .frame(width: 18)
-                        Text(":")
-                        Text(m)
-                            .frame(width: 18)
-                        Text(":")
-                        Text(s)
-                            .frame(width: 18)
+                        // Pace Box
+                        HStack(spacing: 0) {
+                            let time = entry.savedTimes[item.0]
+                            let paceStr = calculatePace(time: time, distance: item.0)
+                            
+                            Text(paceStr.min).frame(width: 14)
+                            Text("'")
+                            Text(paceStr.sec).frame(width: 14)
+                            Text("\"")
+                        }
+                        .font(.system(size: 11, weight: .bold, design: .monospaced))
+                        .foregroundColor(textColor)
+                        .padding(.horizontal, 8)
+                        .frame(maxWidth: .infinity, minHeight: 20, alignment: .center)
+                        .background(
+                            SkewedRectangle().fill(textBoxColor)
+                        )
                     }
-                    .font(.system(size: 11, weight: .bold, design: .monospaced))
-                    .foregroundColor(textColor)
-                    .padding(.horizontal, 8)
-                    .frame(height: 20)
-                    .background(textBoxColor)
-                    .cornerRadius(6)
-                    
-                    HStack(spacing: 2) {
-                        let time = entry.savedTimes[item.0]
-                        let paceStr = calculatePace(time: time, distance: item.0)
-                        
-                        Text(paceStr.min)
-                            .frame(width: 18)
-                        Text("'")
-                        Text(paceStr.sec)
-                            .frame(width: 18)
-                        Text("\"")
-                    }
-                    .font(.system(size: 11, weight: .bold, design: .monospaced))
-                    .foregroundColor(textColor)
-                    .padding(.horizontal, 8)
-                    .frame(height: 20)
-                    .background(textBoxColor)
-                    .cornerRadius(6)
+                    .frame(maxWidth: .infinity)
                 }
             }
         }
