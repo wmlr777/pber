@@ -22,6 +22,86 @@ struct SkewedRectangle: Shape {
     }
 }
 
+// MARK: - Time Picker Sheet
+struct TimePickerSheet: View {
+    @Binding var isPresented: Bool
+    @Binding var hourStr: String
+    @Binding var minStr: String
+    @Binding var secStr: String
+    
+    let onSave: () -> Void
+    
+    @State private var selectedHour: Int = 0
+    @State private var selectedMin: Int = 0
+    @State private var selectedSec: Int = 0
+    
+    var body: some View {
+        NavigationView {
+            VStack {
+                HStack {
+                    Picker("Hours", selection: $selectedHour) {
+                        ForEach(0..<100) { i in
+                            Text(String(format: "%02d", i)).tag(i)
+                        }
+                    }
+                    .pickerStyle(.wheel)
+                    .frame(maxWidth: .infinity)
+                    
+                    Text(":")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                    
+                    Picker("Minutes", selection: $selectedMin) {
+                        ForEach(0..<60) { i in
+                            Text(String(format: "%02d", i)).tag(i)
+                        }
+                    }
+                    .pickerStyle(.wheel)
+                    .frame(maxWidth: .infinity)
+                    
+                    Text(":")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                    
+                    Picker("Seconds", selection: $selectedSec) {
+                        ForEach(0..<60) { i in
+                            Text(String(format: "%02d", i)).tag(i)
+                        }
+                    }
+                    .pickerStyle(.wheel)
+                    .frame(maxWidth: .infinity)
+                }
+                .padding()
+                Spacer()
+            }
+            .navigationTitle("选择时间")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("取消") {
+                        isPresented = false
+                    }
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("确认") {
+                        hourStr = selectedHour == 0 && selectedMin == 0 && selectedSec == 0 ? "" : String(format: "%02d", selectedHour)
+                        minStr = selectedHour == 0 && selectedMin == 0 && selectedSec == 0 ? "" : String(format: "%02d", selectedMin)
+                        secStr = selectedHour == 0 && selectedMin == 0 && selectedSec == 0 ? "" : String(format: "%02d", selectedSec)
+                        onSave()
+                        isPresented = false
+                    }
+                }
+            }
+            .onAppear {
+                selectedHour = Int(hourStr) ?? 0
+                selectedMin = Int(minStr) ?? 0
+                selectedSec = Int(secStr) ?? 0
+            }
+        }
+        .presentationDetents([.height(300)])
+    }
+}
+
 // MARK: - Distance Time Row
 struct DistanceTimeRow: View {
     let distance: String
@@ -33,11 +113,8 @@ struct DistanceTimeRow: View {
     @State private var minStr: String = ""
     @State private var secStr: String = ""
     
-    enum Field {
-        case hour, min, sec
-    }
-    @FocusState private var focusedField: Field?
-    var isSelected: Bool { focusedField != nil }
+    @State private var isPickerPresented: Bool = false
+    var isSelected: Bool { isPickerPresented }
     
     let textBoxColor = Color(hex: "F7F6E5")
     let textColor = Color.black
@@ -65,15 +142,15 @@ struct DistanceTimeRow: View {
             
             // Right Editable Time Boxes inside a single long box
             HStack(spacing: 4) {
-                timeField(text: $hourStr, field: .hour)
+                timeText(text: hourStr.isEmpty ? "--" : hourStr)
                 Text(":")
                     .foregroundColor(textColor)
                     .font(.system(size: 16, weight: .bold))
-                timeField(text: $minStr, field: .min)
+                timeText(text: minStr.isEmpty ? "--" : minStr)
                 Text(":")
                     .foregroundColor(textColor)
                     .font(.system(size: 16, weight: .bold))
-                timeField(text: $secStr, field: .sec)
+                timeText(text: secStr.isEmpty ? "--" : secStr)
             }
             .padding(.horizontal, 24)
             // 将内容向右对齐，确保所有行的数字能在垂直方向上对齐
@@ -94,9 +171,16 @@ struct DistanceTimeRow: View {
         .scaleEffect(isSelected ? 1.1 : 1.0)
         .animation(.easeInOut(duration: 0.2), value: isSelected)
         .onTapGesture {
-            if focusedField == nil {
-                focusedField = .hour
-            }
+            isPickerPresented = true
+        }
+        .sheet(isPresented: $isPickerPresented) {
+            TimePickerSheet(
+                isPresented: $isPickerPresented,
+                hourStr: $hourStr,
+                minStr: $minStr,
+                secStr: $secStr,
+                onSave: save
+            )
         }
         .onAppear {
             if let t = storageManager.savedTimes[distance] {
@@ -105,18 +189,13 @@ struct DistanceTimeRow: View {
                 secStr = String(format: "%02d", t.second)
             }
         }
-        .onChange(of: hourStr) { _ in save() }
-        .onChange(of: minStr) { _ in save() }
-        .onChange(of: secStr) { _ in save() }
     }
     
-    private func timeField(text: Binding<String>, field: Field) -> some View {
-        TextField("--", text: text)
-            .focused($focusedField, equals: field)
+    private func timeText(text: String) -> some View {
+        Text(text)
             .font(.system(size: 16, weight: .bold, design: .monospaced))
             .foregroundColor(textColor)
             .multilineTextAlignment(.center)
-            .keyboardType(.numberPad)
             .frame(width: 32)
     }
     
