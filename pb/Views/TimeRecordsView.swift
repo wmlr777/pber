@@ -2,10 +2,15 @@ import SwiftUI
 
 // MARK: - Skewed Rectangle Shape
 struct SkewedRectangle: Shape {
+    var offset: CGFloat = 4
+    
+    var animatableData: CGFloat {
+        get { offset }
+        set { offset = newValue }
+    }
+    
     func path(in rect: CGRect) -> Path {
         var path = Path()
-        // 倾斜的偏移量
-        let offset: CGFloat = 4
         
         path.move(to: CGPoint(x: offset, y: 0))
         path.addLine(to: CGPoint(x: rect.maxX, y: 0))
@@ -28,6 +33,12 @@ struct DistanceTimeRow: View {
     @State private var minStr: String = ""
     @State private var secStr: String = ""
     
+    enum Field {
+        case hour, min, sec
+    }
+    @FocusState private var focusedField: Field?
+    var isSelected: Bool { focusedField != nil }
+    
     let textBoxColor = Color(hex: "F7F6E5")
     let textColor = Color.black
     
@@ -40,33 +51,52 @@ struct DistanceTimeRow: View {
                 .foregroundColor(.black)
                 .frame(width: boxWidth, height: 36)
                 .background(
-                    SkewedRectangle()
+                    SkewedRectangle(offset: isSelected ? 0 : 4)
                         .fill(distanceColor)
                         .overlay(
-                            SkewedRectangle()
-                                .stroke(Color.white, lineWidth: 2)
+                            Group {
+                                if !isSelected {
+                                    SkewedRectangle(offset: 4)
+                                        .stroke(Color.white, lineWidth: 2)
+                                }
+                            }
                         )
                 )
             
             // Right Editable Time Boxes inside a single long box
             HStack(spacing: 4) {
-                timeField(text: $hourStr)
+                timeField(text: $hourStr, field: .hour)
                 Text(":")
                     .foregroundColor(textColor)
                     .font(.system(size: 16, weight: .bold))
-                timeField(text: $minStr)
+                timeField(text: $minStr, field: .min)
                 Text(":")
                     .foregroundColor(textColor)
                     .font(.system(size: 16, weight: .bold))
-                timeField(text: $secStr)
+                timeField(text: $secStr, field: .sec)
             }
             .padding(.horizontal, 24)
             // 将内容向右对齐，确保所有行的数字能在垂直方向上对齐
             .frame(maxWidth: .infinity, minHeight: 36, alignment: .trailing)
             .background(
-                SkewedRectangle()
+                SkewedRectangle(offset: isSelected ? 0 : 4)
                     .fill(textBoxColor)
             )
+        }
+        .overlay(
+            Group {
+                if isSelected {
+                    Rectangle()
+                        .stroke(Color.white, lineWidth: 2)
+                }
+            }
+        )
+        .scaleEffect(isSelected ? 1.1 : 1.0)
+        .animation(.easeInOut(duration: 0.2), value: isSelected)
+        .onTapGesture {
+            if focusedField == nil {
+                focusedField = .hour
+            }
         }
         .onAppear {
             if let t = storageManager.savedTimes[distance] {
@@ -80,8 +110,9 @@ struct DistanceTimeRow: View {
         .onChange(of: secStr) { _ in save() }
     }
     
-    private func timeField(text: Binding<String>) -> some View {
+    private func timeField(text: Binding<String>, field: Field) -> some View {
         TextField("--", text: text)
+            .focused($focusedField, equals: field)
             .font(.system(size: 16, weight: .bold, design: .monospaced))
             .foregroundColor(textColor)
             .multilineTextAlignment(.center)

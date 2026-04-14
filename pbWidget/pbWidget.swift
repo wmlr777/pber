@@ -32,7 +32,7 @@ extension Color {
 struct SkewedRectangle: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
-        let offset: CGFloat = 3
+        let offset: CGFloat = 1
         
         path.move(to: CGPoint(x: offset, y: 0))
         path.addLine(to: CGPoint(x: rect.maxX, y: 0))
