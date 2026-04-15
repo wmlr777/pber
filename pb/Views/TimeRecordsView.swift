@@ -238,24 +238,24 @@ struct TimeRecordsView: View {
                     .fill(circleColor)
                     .frame(width: 40, height: 40)
                     .padding(.leading, 30)
-                    .padding(.top, 20)
+                    .padding(.top, 16)
                 
-                // 5 Distance Rows
-                VStack(spacing: 16) {
-                    ForEach(distances, id: \.0) { item in
-                        DistanceTimeRow(
-                            distance: item.0,
-                            distanceColor: item.1,
-                            boxWidth: item.2,
-                            storageManager: storageManager
-                        )
+                ScrollView {
+                    // 5 Distance Rows
+                    VStack(spacing: 16) {
+                        ForEach(distances, id: \.0) { item in
+                            DistanceTimeRow(
+                                distance: item.0,
+                                distanceColor: item.1,
+                                boxWidth: item.2,
+                                storageManager: storageManager
+                            )
+                        }
                     }
+                    .padding(.horizontal, 30)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .padding(.horizontal, 30)
-                
-                Spacer()
             }
-            .padding(.top, 20)
         }
         // Dismiss keyboard when tapping background
         .onTapGesture {
