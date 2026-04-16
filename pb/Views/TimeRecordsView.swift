@@ -104,10 +104,10 @@ struct TimePickerSheet: View {
 
 // MARK: - Distance Time Row
 struct DistanceTimeRow: View {
-    let distance: String
-    let distanceColor: Color
+    let bigEventName: String
+    let smallEvent: SmallEvent
     let boxWidth: CGFloat
-    @ObservedObject var storageManager: TimeStorageManager
+    @ObservedObject var dataManager: DataManager
     
     @State private var hourStr: String = ""
     @State private var minStr: String = ""
@@ -122,14 +122,14 @@ struct DistanceTimeRow: View {
     var body: some View {
         HStack(spacing: 10) {
             // Left Distance Box
-            Text(distance)
+            Text(smallEvent.name)
                 .font(.system(size: 14, weight: .bold))
                 .italic()
                 .foregroundColor(.black)
                 .frame(width: boxWidth, height: 36)
                 .background(
                     SkewedRectangle(offset: isSelected ? 0 : 4)
-                        .fill(distanceColor)
+                        .fill(Color(hex: smallEvent.colorHex))
                         .overlay(
                             Group {
                                 if !isSelected {
@@ -183,7 +183,7 @@ struct DistanceTimeRow: View {
             )
         }
         .onAppear {
-            if let t = storageManager.savedTimes[distance] {
+            if let t = smallEvent.timeRecord, !t.isEmpty {
                 hourStr = String(format: "%02d", t.hour)
                 minStr = String(format: "%02d", t.minute)
                 secStr = String(format: "%02d", t.second)
@@ -201,31 +201,35 @@ struct DistanceTimeRow: View {
     
     private func save() {
         if hourStr.isEmpty && minStr.isEmpty && secStr.isEmpty {
-            storageManager.removeTime(for: distance)
+            dataManager.updateTimeRecord(for: bigEventName, smallEventName: smallEvent.name, record: nil)
         } else {
             let h = Int(hourStr) ?? 0
             let m = Int(minStr) ?? 0
             let s = Int(secStr) ?? 0
-            storageManager.saveTime(for: distance, hour: h, minute: m, second: s)
+            let record = TimeRecord(hour: h, minute: m, second: s)
+            dataManager.updateTimeRecord(for: bigEventName, smallEventName: smallEvent.name, record: record)
         }
     }
 }
 
 // MARK: - Time Records View
 struct TimeRecordsView: View {
-    @StateObject private var storageManager = TimeStorageManager()
+    @EnvironmentObject var dataManager: DataManager
     
     // Colors
     let bgColor = Color(hex: "070303")
     let circleColor = Color(hex: "FFF6F6")
     
-    let distances: [(String, Color, CGFloat)] = [
-        ("1k", Color(hex: "A0D585"), 40),
-        ("5k", Color(hex: "F9F6C4"), 50),
-        ("10k", Color(hex: "FE9EC7"), 60),
-        ("21.0975k", Color(hex: "AACDDC"), 70),
-        ("42.195k", Color(hex: "81A6C6"), 80)
-    ]
+    // 获取已添加的小项目列表
+    private var addedEvents: [(bigEventName: String, smallEvent: SmallEvent)] {
+        var results: [(String, SmallEvent)] = []
+        for bigEvent in dataManager.bigEvents {
+            for smallEvent in bigEvent.subEvents where smallEvent.isAdded && smallEvent.recordFormat == .time_hms {
+                results.append((bigEvent.name, smallEvent))
+            }
+        }
+        return results
+    }
     
     var body: some View {
         ZStack {
@@ -241,14 +245,18 @@ struct TimeRecordsView: View {
                     .padding(.top, 16)
                 
                 ScrollView {
-                    // 5 Distance Rows
+                    // Selected Distance Rows
                     VStack(spacing: 16) {
-                        ForEach(distances, id: \.0) { item in
+                        let events = addedEvents
+                        ForEach(Array(events.enumerated()), id: \.element.smallEvent.id) { index, item in
+                            // 根据索引自动计算宽度，第一项为 40，之后每项增加 5
+                            let calculatedWidth: CGFloat = 40 + CGFloat(index) * 5
+                            
                             DistanceTimeRow(
-                                distance: item.0,
-                                distanceColor: item.1,
-                                boxWidth: item.2,
-                                storageManager: storageManager
+                                bigEventName: item.bigEventName,
+                                smallEvent: item.smallEvent,
+                                boxWidth: calculatedWidth,
+                                dataManager: dataManager
                             )
                         }
                     }
@@ -266,4 +274,5 @@ struct TimeRecordsView: View {
 
 #Preview {
     TimeRecordsView()
+        .environmentObject(DataManager())
 }

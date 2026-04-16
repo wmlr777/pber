@@ -44,138 +44,199 @@ struct SkewedRectangle: Shape {
     }
 }
 
-// MARK: - Time Model
-struct SavedTime: Codable {
-    var hour: Int
-    var minute: Int
-    var second: Int
+// MARK: - Data Models
+enum RecordFormat: String, Codable {
+    case time_hms = "time_hms"
+    case unknown = "unknown"
+}
+
+struct TimeRecord: Codable, Equatable {
+    var hour: Int = 0
+    var minute: Int = 0
+    var second: Int = 0
+    
+    var isEmpty: Bool {
+        hour == 0 && minute == 0 && second == 0
+    }
+}
+
+struct SmallEvent: Codable, Identifiable, Equatable {
+    var id: String { name }
+    var name: String
+    var colorHex: String
+    var recordFormat: RecordFormat
+    var timeRecord: TimeRecord?
+    var isAdded: Bool
+    var isPaceValid: Bool?
+    var distance: Double?
+}
+
+struct BigEvent: Codable, Identifiable, Equatable {
+    var id: String { name }
+    var name: String
+    var icon: String
+    var subEvents: [SmallEvent]
 }
 
 struct Provider: AppIntentTimelineProvider {
     func placeholder(in context: Context) -> SimpleEntry {
-        SimpleEntry(date: Date(), configuration: ConfigurationAppIntent(), savedTimes: [:])
+        SimpleEntry(date: Date(), configuration: ConfigurationAppIntent(), bigEvents: [])
     }
 
     func snapshot(for configuration: ConfigurationAppIntent, in context: Context) async -> SimpleEntry {
-        let times = loadSavedTimes()
-        return SimpleEntry(date: Date(), configuration: configuration, savedTimes: times)
+        let events = loadBigEvents()
+        return SimpleEntry(date: Date(), configuration: configuration, bigEvents: events)
     }
     
     func timeline(for configuration: ConfigurationAppIntent, in context: Context) async -> Timeline<SimpleEntry> {
-        let times = loadSavedTimes()
-        let entry = SimpleEntry(date: Date(), configuration: configuration, savedTimes: times)
+        let events = loadBigEvents()
+        let entry = SimpleEntry(date: Date(), configuration: configuration, bigEvents: events)
         return Timeline(entries: [entry], policy: .atEnd)
     }
     
-    private func loadSavedTimes() -> [String: SavedTime] {
-        let fileName = "pb_time_setting.json"
-        guard let container = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.pb.shared") else { return [:] }
-        let fileURL = container.appendingPathComponent(fileName)
-        do {
+    private func loadBigEvents() -> [BigEvent] {
+        let fileName = "pb_events_setting.json"
+        
+        // 尝试从 App Group 中读取最新数据
+        if let container = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.pb.shared") {
+            let fileURL = container.appendingPathComponent(fileName)
             if FileManager.default.fileExists(atPath: fileURL.path) {
-                let data = try Data(contentsOf: fileURL)
-                return try JSONDecoder().decode([String: SavedTime].self, from: data)
+                do {
+                    let data = try Data(contentsOf: fileURL)
+                    let decoded = try JSONDecoder().decode([BigEvent].self, from: data)
+                    if !decoded.isEmpty {
+                        return decoded
+                    }
+                } catch {
+                    print("Widget failed to load user events: \(error)")
+                }
             }
-        } catch {
-            print("Widget failed to load time: \(error)")
         }
-        return [:]
+        
+        // 如果 App Group 中没有数据，尝试从 Bundle 中加载 default_events.json（例如预览或首次启动还未打开主应用时）
+        if let bundleURL = Bundle.main.url(forResource: "default_events", withExtension: "json") {
+            do {
+                let data = try Data(contentsOf: bundleURL)
+                let decoded = try JSONDecoder().decode([BigEvent].self, from: data)
+                return decoded
+            } catch {
+                print("Widget failed to load default events: \(error)")
+            }
+        }
+        
+        return []
     }
 }
 
 struct SimpleEntry: TimelineEntry {
     let date: Date
     let configuration: ConfigurationAppIntent
-    let savedTimes: [String: SavedTime]
+    let bigEvents: [BigEvent]
 }
 
 struct pbWidgetEntryView : View {
     var entry: Provider.Entry
 
-    let distances: [(String, Color, CGFloat)] = [
-        ("1k", Color(hex: "A0D585"), 30),
-        ("5k", Color(hex: "F9F6C4"), 38),
-        ("10k", Color(hex: "FE9EC7"), 46),
-        ("21.0975k", Color(hex: "AACDDC"), 54),
-        ("42.195k", Color(hex: "81A6C6"), 62)
-    ]
     let textBoxColor = Color(hex: "F7F6E5")
     let textColor = Color.black
 
-    func calculatePace(time: SavedTime?, distance: String) -> (min: String, sec: String) {
-        guard let t = time,
-              let dist = Double(distance.replacingOccurrences(of: "k", with: "")) else {
+    func calculatePace(time: TimeRecord?, distance: Double?) -> (min: String, sec: String) {
+        guard let t = time, !t.isEmpty, let dist = distance, dist > 0 else {
             return ("--", "--")
         }
         let totalSeconds = Double(t.hour * 3600 + t.minute * 60 + t.second)
-        guard totalSeconds > 0 && dist > 0 else { return ("--", "--") }
-        let paceSeconds = totalSeconds / dist
+        guard totalSeconds > 0 else { return ("--", "--") }
+        let paceSeconds = (totalSeconds / dist) * 1000.0
         let pMin = Int(paceSeconds) / 60
         let pSec = Int(paceSeconds) % 60
         return (String(format: "%02d", pMin), String(format: "%02d", pSec))
     }
+    
+    private var activeEvents: [SmallEvent] {
+        var results: [SmallEvent] = []
+        for bigEvent in entry.bigEvents {
+            for smallEvent in bigEvent.subEvents where smallEvent.isAdded && smallEvent.recordFormat == .time_hms {
+                results.append(smallEvent)
+            }
+        }
+        return Array(results.prefix(5))
+    }
 
     var body: some View {
         VStack(spacing: 8) {
-            ForEach(distances, id: \.0) { item in
-                HStack(spacing: 8) {
-                    // Left Distance Box
-                    Text(item.0)
-                        .font(.system(size: 11, weight: .bold))
-                        .italic()
-                        .foregroundColor(.black)
-                        .frame(width: item.2, height: 20)
-                        .background(
-                            SkewedRectangle()
-                                .fill(item.1)
-                                .overlay(
-                                    SkewedRectangle()
-                                        .stroke(Color.white, lineWidth: 1.5)
-                                )
-                        )
-                    
-                    // Right Boxes (Time and Pace)
+            let events = activeEvents
+            if events.isEmpty {
+                Text("暂无数据")
+                    .foregroundColor(.white)
+                    .font(.footnote)
+            } else {
+                ForEach(Array(events.enumerated()), id: \.element.id) { index, smallEvent in
+                    let calculatedWidth: CGFloat = 30 + CGFloat(index) * 8
                     HStack(spacing: 8) {
-                        // Time Box
-                        HStack(spacing: 0) {
-                            let time = entry.savedTimes[item.0]
-                            let h = time.map { String(format: "%02d", $0.hour) } ?? "--"
-                            let m = time.map { String(format: "%02d", $0.minute) } ?? "--"
-                            let s = time.map { String(format: "%02d", $0.second) } ?? "--"
-                            
-                            Text(h).frame(width: 14)
-                            Text(":")
-                            Text(m).frame(width: 14)
-                            Text(":")
-                            Text(s).frame(width: 14)
-                        }
-                        .font(.system(size: 11, weight: .bold, design: .monospaced))
-                        .foregroundColor(textColor)
-                        .padding(.horizontal, 8)
-                        .frame(maxWidth: .infinity, minHeight: 20, alignment: .center)
-                        .background(
-                            SkewedRectangle().fill(textBoxColor)
-                        )
+                        // Left Distance Box
+                        Text(smallEvent.name)
+                            .font(.system(size: 11, weight: .bold))
+                            .italic()
+                            .foregroundColor(.black)
+                            .frame(width: calculatedWidth, height: 20)
+                            .background(
+                                SkewedRectangle()
+                                    .fill(Color(hex: smallEvent.colorHex))
+                                    .overlay(
+                                        SkewedRectangle()
+                                            .stroke(Color.white, lineWidth: 1.5)
+                                    )
+                            )
                         
-                        // Pace Box
-                        HStack(spacing: 0) {
-                            let time = entry.savedTimes[item.0]
-                            let paceStr = calculatePace(time: time, distance: item.0)
+                        // Right Boxes (Time and Pace)
+                        HStack(spacing: 8) {
+                            // Time Box
+                            HStack(spacing: 0) {
+                                let time = smallEvent.timeRecord
+                                let h = (time?.isEmpty == false) ? String(format: "%02d", time!.hour) : "--"
+                                let m = (time?.isEmpty == false) ? String(format: "%02d", time!.minute) : "--"
+                                let s = (time?.isEmpty == false) ? String(format: "%02d", time!.second) : "--"
+                                
+                                Text(h).frame(width: 14)
+                                Text(":")
+                                Text(m).frame(width: 14)
+                                Text(":")
+                                Text(s).frame(width: 14)
+                            }
+                            .font(.system(size: 11, weight: .bold, design: .monospaced))
+                            .foregroundColor(textColor)
+                            .padding(.horizontal, 8)
+                            .frame(maxWidth: .infinity, minHeight: 20, alignment: .center)
+                            .background(
+                                SkewedRectangle().fill(textBoxColor)
+                            )
                             
-                            Text(paceStr.min).frame(width: 14)
-                            Text("'")
-                            Text(paceStr.sec).frame(width: 14)
-                            Text("\"")
+                            // Pace Box
+                            HStack(spacing: 0) {
+                                if smallEvent.isPaceValid == true {
+                                    let paceStr = calculatePace(time: smallEvent.timeRecord, distance: smallEvent.distance)
+                                    
+                                    Text(paceStr.min).frame(width: 14)
+                                    Text("'")
+                                    Text(paceStr.sec).frame(width: 14)
+                                    Text("\"")
+                                } else {
+                                    Text("--").frame(width: 14)
+                                    Text("'")
+                                    Text("--").frame(width: 14)
+                                    Text("\"")
+                                }
+                            }
+                            .font(.system(size: 11, weight: .bold, design: .monospaced))
+                            .foregroundColor(textColor)
+                            .padding(.horizontal, 8)
+                            .frame(maxWidth: .infinity, minHeight: 20, alignment: .center)
+                            .background(
+                                SkewedRectangle().fill(textBoxColor)
+                            )
                         }
-                        .font(.system(size: 11, weight: .bold, design: .monospaced))
-                        .foregroundColor(textColor)
-                        .padding(.horizontal, 8)
-                        .frame(maxWidth: .infinity, minHeight: 20, alignment: .center)
-                        .background(
-                            SkewedRectangle().fill(textBoxColor)
-                        )
+                        .frame(maxWidth: .infinity)
                     }
-                    .frame(maxWidth: .infinity)
                 }
             }
         }
@@ -207,5 +268,5 @@ extension ConfigurationAppIntent {
 #Preview(as: .systemMedium) {
     pbWidget()
 } timeline: {
-    SimpleEntry(date: .now, configuration: .smiley, savedTimes: [:])
+    SimpleEntry(date: .now, configuration: .smiley, bigEvents: [])
 }
