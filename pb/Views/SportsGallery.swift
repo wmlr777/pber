@@ -9,26 +9,24 @@ struct SportsGalleryView: View {
     let columns = Array(repeating: GridItem(.flexible(), spacing: 10), count: 3)
     
     var body: some View {
-        NavigationStack {
-            ZStack {
-                bgColor.ignoresSafeArea()
-                
-                ScrollView {
-                    LazyVGrid(columns: columns, spacing: 10) {
-                        ForEach(dataManager.bigEvents) { bigEvent in
-                            if bigEvent.subEvents.isEmpty {
+        ZStack {
+            bgColor.ignoresSafeArea()
+            
+            ScrollView {
+                LazyVGrid(columns: columns, spacing: 10) {
+                    ForEach(dataManager.bigEvents) { bigEvent in
+                        if bigEvent.subEvents.isEmpty {
+                            sportCell(for: bigEvent)
+                        } else {
+                            NavigationLink(destination: SubEventsView(bigEvent: bigEvent)) {
                                 sportCell(for: bigEvent)
-                            } else {
-                                NavigationLink(destination: SubEventsView(bigEvent: bigEvent)) {
-                                    sportCell(for: bigEvent)
-                                }
                             }
                         }
                     }
-                    .padding()
                 }
-                .padding(.top, 16)
+                .padding()
             }
+            .padding(.top, 16)
         }
     }
     

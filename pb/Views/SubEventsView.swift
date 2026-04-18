@@ -51,6 +51,7 @@ struct SubEventsView: View {
                 .padding()
             }
         }
+        .navigationBarHidden(false)
         .navigationTitle(bigEvent.name + "项目")
         .navigationBarTitleDisplayMode(.inline)
         .alert(isPresented: $showingAlert) {
