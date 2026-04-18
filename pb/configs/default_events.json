@@ -17,12 +17,5 @@
     ]
   },
   { "name": "游泳", "icon": "figure.pool.swim", "subEvents": [] },
-  { "name": "篮球", "icon": "basketball", "subEvents": [] },
-  { "name": "足球", "icon": "soccerball", "subEvents": [] },
-  { "name": "羽毛球", "icon": "figure.badminton", "subEvents": [] },
-  { "name": "网球", "icon": "figure.tennis", "subEvents": [] },
-  { "name": "排球", "icon": "volleyball", "subEvents": [] },
-  { "name": "乒乓球", "icon": "figure.table.tennis", "subEvents": [] },
   { "name": "自行车", "icon": "bicycle", "subEvents": [] },
-  { "name": "滑雪", "icon": "figure.skiing.downhill", "subEvents": [] }
 ]
