@@ -107,6 +107,7 @@ struct DistanceTimeRow: View {
     let bigEventName: String
     let smallEvent: SmallEvent
     let boxWidth: CGFloat
+    @Binding var swipedRowID: String?
     @ObservedObject var dataManager: DataManager
     
     @State private var hourStr: String = ""
@@ -114,64 +115,147 @@ struct DistanceTimeRow: View {
     @State private var secStr: String = ""
     
     @State private var isPickerPresented: Bool = false
+    @State private var dragOffset: CGFloat = 0
+    @State private var isSwiped: Bool = false
+    
     var isSelected: Bool { isPickerPresented }
     
     let textBoxColor = Color(hex: "F7F6E5")
     let textColor = Color.black
     
     var body: some View {
-        HStack(spacing: 10) {
-            // Left Distance Box
-            Text(smallEvent.name)
-                .font(.system(size: 14, weight: .bold))
-                .italic()
-                .foregroundColor(.black)
-                .frame(width: boxWidth, height: 36)
+        ZStack(alignment: .trailing) {
+            // Delete Background
+            if dragOffset < 0 {
+                SkewedRectangle(offset: 4)
+                    .fill(Color.red)
+                    .overlay(
+                        HStack {
+                            Spacer()
+                            Text("删除")
+                                .foregroundColor(.white)
+                                .font(.system(size: 16, weight: .bold))
+                                .padding(.trailing, 20)
+                        }
+                    )
+                    .onTapGesture {
+                        withAnimation {
+                            _ = dataManager.toggleAddedStatus(for: bigEventName, smallEventName: smallEvent.name)
+                        }
+                    }
+            }
+            
+            HStack(spacing: 10) {
+                // Left Distance Box
+                Text(smallEvent.name)
+                    .font(.system(size: 14, weight: .bold))
+                    .italic()
+                    .foregroundColor(.black)
+                    .frame(width: boxWidth, height: 36)
+                    .background(
+                        SkewedRectangle(offset: isSelected ? 0 : 4)
+                            .fill(Color(hex: smallEvent.colorHex))
+                            .overlay(
+                                Group {
+                                    if !isSelected {
+                                        SkewedRectangle(offset: 4)
+                                            .stroke(Color.white, lineWidth: 2)
+                                    }
+                                }
+                            )
+                    )
+                
+                // Right Editable Time Boxes inside a single long box
+                HStack(spacing: 4) {
+                    timeText(text: hourStr.isEmpty ? "--" : hourStr)
+                    Text(":")
+                        .foregroundColor(textColor)
+                        .font(.system(size: 16, weight: .bold))
+                    timeText(text: minStr.isEmpty ? "--" : minStr)
+                    Text(":")
+                        .foregroundColor(textColor)
+                        .font(.system(size: 16, weight: .bold))
+                    timeText(text: secStr.isEmpty ? "--" : secStr)
+                }
+                .padding(.horizontal, 24)
+                // 将内容向右对齐，确保所有行的数字能在垂直方向上对齐
+                .frame(maxWidth: .infinity, minHeight: 36, alignment: .trailing)
                 .background(
                     SkewedRectangle(offset: isSelected ? 0 : 4)
-                        .fill(Color(hex: smallEvent.colorHex))
-                        .overlay(
-                            Group {
-                                if !isSelected {
-                                    SkewedRectangle(offset: 4)
-                                        .stroke(Color.white, lineWidth: 2)
+                        .fill(textBoxColor)
+                )
+            }
+            .overlay(
+                Group {
+                    if isSelected {
+                        Rectangle()
+                            .stroke(Color.white, lineWidth: 2)
+                    }
+                }
+            )
+            .scaleEffect(isSelected ? 1.1 : 1.0)
+            .offset(x: dragOffset)
+            .animation(.easeInOut(duration: 0.2), value: isSelected)
+            .gesture(
+                DragGesture()
+                    .onChanged { value in
+                        if swipedRowID != smallEvent.id {
+                            swipedRowID = smallEvent.id
+                        }
+                        
+                        let maxDrag: CGFloat = -100
+                        if value.translation.width < 0 {
+                            if isSwiped {
+                                dragOffset = max(maxDrag, -80 + value.translation.width)
+                            } else {
+                                dragOffset = max(maxDrag, value.translation.width)
+                            }
+                        } else if value.translation.width > 0 {
+                            if isSwiped {
+                                dragOffset = -80 + value.translation.width
+                                if dragOffset > 0 { dragOffset = 0 }
+                            } else {
+                                dragOffset = 0
+                            }
+                        }
+                    }
+                    .onEnded { value in
+                        withAnimation {
+                            if value.translation.width < -50 || dragOffset < -50 {
+                                dragOffset = -80
+                                isSwiped = true
+                            } else {
+                                dragOffset = 0
+                                isSwiped = false
+                                if swipedRowID == smallEvent.id {
+                                    swipedRowID = nil
                                 }
                             }
-                        )
-                )
-            
-            // Right Editable Time Boxes inside a single long box
-            HStack(spacing: 4) {
-                timeText(text: hourStr.isEmpty ? "--" : hourStr)
-                Text(":")
-                    .foregroundColor(textColor)
-                    .font(.system(size: 16, weight: .bold))
-                timeText(text: minStr.isEmpty ? "--" : minStr)
-                Text(":")
-                    .foregroundColor(textColor)
-                    .font(.system(size: 16, weight: .bold))
-                timeText(text: secStr.isEmpty ? "--" : secStr)
-            }
-            .padding(.horizontal, 24)
-            // 将内容向右对齐，确保所有行的数字能在垂直方向上对齐
-            .frame(maxWidth: .infinity, minHeight: 36, alignment: .trailing)
-            .background(
-                SkewedRectangle(offset: isSelected ? 0 : 4)
-                    .fill(textBoxColor)
+                        }
+                    }
             )
-        }
-        .overlay(
-            Group {
-                if isSelected {
-                    Rectangle()
-                        .stroke(Color.white, lineWidth: 2)
+            .onChange(of: swipedRowID) { newValue in
+                if newValue != smallEvent.id {
+                    withAnimation {
+                        dragOffset = 0
+                        isSwiped = false
+                    }
                 }
             }
-        )
-        .scaleEffect(isSelected ? 1.1 : 1.0)
-        .animation(.easeInOut(duration: 0.2), value: isSelected)
-        .onTapGesture {
-            isPickerPresented = true
+            .onTapGesture {
+                if isSwiped {
+                    withAnimation {
+                        dragOffset = 0
+                        isSwiped = false
+                        if swipedRowID == smallEvent.id {
+                            swipedRowID = nil
+                        }
+                    }
+                } else {
+                    swipedRowID = nil
+                    isPickerPresented = true
+                }
+            }
         }
         .sheet(isPresented: $isPickerPresented) {
             TimePickerSheet(
@@ -216,6 +300,8 @@ struct DistanceTimeRow: View {
 struct TimeRecordsView: View {
     @EnvironmentObject var dataManager: DataManager
     
+    @State private var swipedRowID: String? = nil
+    
     // Colors
     let bgColor = Color(hex: "070303")
     let circleColor = Color(hex: "FFF6F6")
@@ -256,6 +342,7 @@ struct TimeRecordsView: View {
                                 bigEventName: item.bigEventName,
                                 smallEvent: item.smallEvent,
                                 boxWidth: calculatedWidth,
+                                swipedRowID: $swipedRowID,
                                 dataManager: dataManager
                             )
                         }
@@ -267,6 +354,7 @@ struct TimeRecordsView: View {
         }
         // Dismiss keyboard when tapping background
         .onTapGesture {
+            swipedRowID = nil
             UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
         }
     }
