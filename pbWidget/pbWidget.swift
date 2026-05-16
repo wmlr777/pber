@@ -45,82 +45,47 @@ struct SkewedRectangle: Shape {
 }
 
 // MARK: - Data Models
-enum RecordFormat: String, Codable {
-    case time_hms = "time_hms"
-    case unknown = "unknown"
-}
-
-struct TimeRecord: Codable, Equatable {
-    var hour: Int = 0
-    var minute: Int = 0
-    var second: Int = 0
-    
-    var isEmpty: Bool {
-        hour == 0 && minute == 0 && second == 0
-    }
-}
-
-struct SmallEvent: Codable, Identifiable, Equatable {
-    var id: String { name }
-    var name: String
+struct Record: Identifiable, Codable, Equatable {
+    var id: UUID = UUID()
+    var distance: Double // in km
+    var distanceStr: String // e.g. "1k", "21.0975k", "Custom"
+    var targetHours: Int
+    var targetMinutes: Int
+    var targetSeconds: Int
+    var date: Date?
+    var isCustom: Bool = false
     var colorHex: String
-    var recordFormat: RecordFormat
-    var timeRecord: TimeRecord?
-    var isAdded: Bool
-    var isPaceValid: Bool?
-    var distance: Double?
-}
-
-struct BigEvent: Codable, Identifiable, Equatable {
-    var id: String { name }
-    var name: String
-    var icon: String
-    var subEvents: [SmallEvent]
 }
 
 struct Provider: AppIntentTimelineProvider {
     func placeholder(in context: Context) -> SimpleEntry {
-        SimpleEntry(date: Date(), configuration: ConfigurationAppIntent(), bigEvents: [])
+        SimpleEntry(date: Date(), configuration: ConfigurationAppIntent(), records: [])
     }
 
     func snapshot(for configuration: ConfigurationAppIntent, in context: Context) async -> SimpleEntry {
-        let events = loadBigEvents()
-        return SimpleEntry(date: Date(), configuration: configuration, bigEvents: events)
+        let events = loadRecords()
+        return SimpleEntry(date: Date(), configuration: configuration, records: events)
     }
     
     func timeline(for configuration: ConfigurationAppIntent, in context: Context) async -> Timeline<SimpleEntry> {
-        let events = loadBigEvents()
-        let entry = SimpleEntry(date: Date(), configuration: configuration, bigEvents: events)
+        let events = loadRecords()
+        let entry = SimpleEntry(date: Date(), configuration: configuration, records: events)
         return Timeline(entries: [entry], policy: .atEnd)
     }
     
-    private func loadBigEvents() -> [BigEvent] {
-        let fileName = "pb_events_setting.json"
+    private func loadRecords() -> [Record] {
+        let fileName = "records.json"
         
-        // 尝试从 App Group 中读取最新数据
         if let container = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.pb.shared") {
             let fileURL = container.appendingPathComponent(fileName)
             if FileManager.default.fileExists(atPath: fileURL.path) {
                 do {
                     let data = try Data(contentsOf: fileURL)
-                    let decoded = try JSONDecoder().decode([BigEvent].self, from: data)
-                    if !decoded.isEmpty {
-                        return decoded
-                    }
+                    let decoded = try JSONDecoder().decode([Record].self, from: data)
+                    return decoded
                 } catch {
-                    print("Widget failed to load user events: \(error)")
+                    print("Widget failed to load user records: \(error)")
                 }
-            }
-        }
-        
-        // 如果 App Group 中没有数据，尝试从 Bundle 中加载 default_events.json（例如预览或首次启动还未打开主应用时）
-        if let bundleURL = Bundle.main.url(forResource: "default_events", withExtension: "json") {
-            do {
-                let data = try Data(contentsOf: bundleURL)
-                let decoded = try JSONDecoder().decode([BigEvent].self, from: data)
-                return decoded
-            } catch {
-                print("Widget failed to load default events: \(error)")
             }
         }
         
@@ -131,7 +96,7 @@ struct Provider: AppIntentTimelineProvider {
 struct SimpleEntry: TimelineEntry {
     let date: Date
     let configuration: ConfigurationAppIntent
-    let bigEvents: [BigEvent]
+    let records: [Record]
 }
 
 struct pbWidgetEntryView : View {
@@ -140,26 +105,17 @@ struct pbWidgetEntryView : View {
     let textBoxColor = Color(hex: "F7F6E5")
     let textColor = Color.black
 
-    func calculatePace(time: TimeRecord?, distance: Double?) -> (min: String, sec: String) {
-        guard let t = time, !t.isEmpty, let dist = distance, dist > 0 else {
-            return ("--", "--")
-        }
-        let totalSeconds = Double(t.hour * 3600 + t.minute * 60 + t.second)
-        guard totalSeconds > 0 else { return ("--", "--") }
-        let paceSeconds = (totalSeconds / dist) * 1000.0
+    func calculatePace(hours: Int, minutes: Int, seconds: Int, distance: Double) -> (min: String, sec: String) {
+        let totalSeconds = Double(hours * 3600 + minutes * 60 + seconds)
+        guard totalSeconds > 0, distance > 0 else { return ("--", "--") }
+        let paceSeconds = totalSeconds / distance
         let pMin = Int(paceSeconds) / 60
         let pSec = Int(paceSeconds) % 60
         return (String(format: "%02d", pMin), String(format: "%02d", pSec))
     }
     
-    private var activeEvents: [SmallEvent] {
-        var results: [SmallEvent] = []
-        for bigEvent in entry.bigEvents {
-            for smallEvent in bigEvent.subEvents where smallEvent.isAdded && smallEvent.recordFormat == .time_hms {
-                results.append(smallEvent)
-            }
-        }
-        return Array(results.prefix(5))
+    private var activeEvents: [Record] {
+        return Array(entry.records.prefix(5))
     }
 
     var body: some View {
@@ -170,18 +126,18 @@ struct pbWidgetEntryView : View {
                     .foregroundColor(.white)
                     .font(.footnote)
             } else {
-                ForEach(Array(events.enumerated()), id: \.element.id) { index, smallEvent in
+                ForEach(Array(events.enumerated()), id: \.element.id) { index, record in
                     let calculatedWidth: CGFloat = 30 + CGFloat(index) * 8
                     HStack(spacing: 8) {
                         // Left Distance Box
-                        Text(smallEvent.name)
+                        Text(record.distanceStr)
                             .font(.system(size: 11, weight: .bold))
                             .italic()
                             .foregroundColor(.black)
                             .frame(width: calculatedWidth, height: 20)
                             .background(
                                 SkewedRectangle()
-                                    .fill(Color(hex: smallEvent.colorHex))
+                                    .fill(Color(hex: record.colorHex))
                                     .overlay(
                                         SkewedRectangle()
                                             .stroke(Color.white, lineWidth: 1.5)
@@ -192,10 +148,9 @@ struct pbWidgetEntryView : View {
                         HStack(spacing: 8) {
                             // Time Box
                             HStack(spacing: 0) {
-                                let time = smallEvent.timeRecord
-                                let h = (time?.isEmpty == false) ? String(format: "%02d", time!.hour) : "--"
-                                let m = (time?.isEmpty == false) ? String(format: "%02d", time!.minute) : "--"
-                                let s = (time?.isEmpty == false) ? String(format: "%02d", time!.second) : "--"
+                                let h = (record.targetHours > 0) ? String(format: "%02d", record.targetHours) : "--"
+                                let m = (record.targetHours > 0 || record.targetMinutes > 0) ? String(format: "%02d", record.targetMinutes) : "--"
+                                let s = (record.targetHours > 0 || record.targetMinutes > 0 || record.targetSeconds > 0) ? String(format: "%02d", record.targetSeconds) : "--"
                                 
                                 Text(h).frame(width: 14)
                                 Text(":")
@@ -213,19 +168,12 @@ struct pbWidgetEntryView : View {
                             
                             // Pace Box
                             HStack(spacing: 0) {
-                                if smallEvent.isPaceValid == true {
-                                    let paceStr = calculatePace(time: smallEvent.timeRecord, distance: smallEvent.distance)
-                                    
-                                    Text(paceStr.min).frame(width: 14)
-                                    Text("'")
-                                    Text(paceStr.sec).frame(width: 14)
-                                    Text("\"")
-                                } else {
-                                    Text("--").frame(width: 14)
-                                    Text("'")
-                                    Text("--").frame(width: 14)
-                                    Text("\"")
-                                }
+                                let paceStr = calculatePace(hours: record.targetHours, minutes: record.targetMinutes, seconds: record.targetSeconds, distance: record.distance)
+                                
+                                Text(paceStr.min).frame(width: 14)
+                                Text("'")
+                                Text(paceStr.sec).frame(width: 14)
+                                Text("\"")
                             }
                             .font(.system(size: 11, weight: .bold, design: .monospaced))
                             .foregroundColor(textColor)
@@ -268,5 +216,5 @@ extension ConfigurationAppIntent {
 #Preview(as: .systemMedium) {
     pbWidget()
 } timeline: {
-    SimpleEntry(date: .now, configuration: .smiley, bigEvents: [])
+    SimpleEntry(date: .now, configuration: .smiley, records: [])
 }
