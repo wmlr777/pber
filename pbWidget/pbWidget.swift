@@ -70,7 +70,7 @@ struct Provider: AppIntentTimelineProvider {
     func timeline(for configuration: ConfigurationAppIntent, in context: Context) async -> Timeline<SimpleEntry> {
         let events = loadRecords()
         let entry = SimpleEntry(date: Date(), configuration: configuration, records: events)
-        return Timeline(entries: [entry], policy: .atEnd)
+        return Timeline(entries: [entry], policy: .never)
     }
     
     private func loadRecords() -> [Record] {

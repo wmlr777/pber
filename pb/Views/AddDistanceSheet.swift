@@ -20,7 +20,7 @@ struct AddDistanceSheet: View {
                             showAlert = true
                         } else {
                             let newRecord = Record(distance: preset.distance, distanceStr: preset.distanceStr, targetHours: 0, targetMinutes: 0, targetSeconds: 0, date: nil, colorHex: preset.colorHex)
-                            vm.records.append(newRecord)
+                            vm.addRecord(newRecord)
                             isPresented = false
                         }
                     }) {

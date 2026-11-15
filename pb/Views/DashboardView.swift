@@ -2,6 +2,7 @@ import SwiftUI
 import Combine
 
 struct DashboardView: View {
+    @Environment(\.scenePhase) private var scenePhase
     @StateObject private var vm = DashboardViewModel()
     @State private var selectedRecord: Record?
     @State private var showAddSheet = false
@@ -62,9 +63,6 @@ struct DashboardView: View {
                     .onMove(perform: vm.moveRecord)
                 }
                 .listStyle(PlainListStyle())
-                .onChange(of: vm.records) { _ in
-                    vm.saveRecords()
-                }
             }
             
             // FAB
@@ -114,8 +112,8 @@ struct DashboardView: View {
                 // Custom Bottom Sheet
                 VStack {
                     Spacer()
-                    if let index = vm.records.firstIndex(where: { $0.id == record.id }) {
-                        EditSheetView(record: $vm.records[index], selectedRecord: $selectedRecord)
+                    if let currentRecord = vm.records.first(where: { $0.id == record.id }) {
+                        EditSheetView(record: currentRecord, selectedRecord: $selectedRecord, onSave: vm.updateRecord)
                             .padding(.bottom, 30)
                             .background(Color.white)
                             .cornerRadius(20)
@@ -131,6 +129,11 @@ struct DashboardView: View {
         }
         .sheet(isPresented: $showAddSheet) {
             AddDistanceSheet(vm: vm, isPresented: $showAddSheet)
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .background {
+                vm.refreshWidgetOnBackground()
+            }
         }
     }
 }

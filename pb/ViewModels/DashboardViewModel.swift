@@ -1,11 +1,15 @@
 import Foundation
 import Combine
+import OSLog
 import SwiftUI
 import WidgetKit
 
 class DashboardViewModel: ObservableObject {
-    @Published var records: [Record] = []
+    @Published private(set) var records: [Record] = []
     @Published var presetDistances: [PresetDistance] = []
+
+    private let logger = Logger(subsystem: "com.mowen.pb", category: "Records")
+    private var recordsChangedSinceBackground = false
     
     init() {
         loadPresets()
@@ -47,19 +51,48 @@ class DashboardViewModel: ObservableObject {
         }
     }
     
-    func saveRecords() {
-        guard let container = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.pb.shared") else { return }
-        let url = container.appendingPathComponent("records.json")
-        if let data = try? JSONEncoder().encode(records) {
-            try? data.write(to: url)
-            WidgetCenter.shared.reloadAllTimelines()
+    private func saveRecords() {
+        guard let container = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.pb.shared") else {
+            logger.error("Could not access the shared records container")
+            return
         }
+        let url = container.appendingPathComponent("records.json")
+        do {
+            let data = try JSONEncoder().encode(records)
+            try data.write(to: url, options: .atomic)
+            recordsChangedSinceBackground = true
+            reloadRecordsWidget()
+        } catch {
+            logger.error("Could not save shared records: \(error.localizedDescription, privacy: .public)")
+        }
+    }
+
+    private func reloadRecordsWidget() {
+        WidgetCenter.shared.reloadTimelines(ofKind: "pbWidget")
+    }
+
+    func refreshWidgetOnBackground() {
+        // WidgetKit can throttle reloads during a series of foreground edits.
+        guard recordsChangedSinceBackground else { return }
+        recordsChangedSinceBackground = false
+        reloadRecordsWidget()
+    }
+
+    func updateRecord(_ record: Record) {
+        guard let index = records.firstIndex(where: { $0.id == record.id }),
+              records[index] != record else { return }
+        records[index] = record
+        saveRecords()
+    }
+
+    func addRecord(_ record: Record) {
+        records.append(record)
+        saveRecords()
     }
     
     func addCustomRecord(distance: Double) {
         let randomColor = presetDistances.randomElement()?.colorHex ?? "8BA68E"
-        records.append(Record(distance: distance, distanceStr: "\(distance)k", targetHours: 0, targetMinutes: 0, targetSeconds: 0, date: nil, isCustom: true, colorHex: randomColor))
-        saveRecords()
+        addRecord(Record(distance: distance, distanceStr: "\(distance)k", targetHours: 0, targetMinutes: 0, targetSeconds: 0, date: nil, isCustom: true, colorHex: randomColor))
     }
     
     func deleteRecord(_ record: Record) {

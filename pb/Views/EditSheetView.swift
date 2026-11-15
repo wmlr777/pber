@@ -1,8 +1,9 @@
 import SwiftUI
 
 struct EditSheetView: View {
-    @Binding var record: Record
+    let record: Record
     @Binding var selectedRecord: Record?
+    let onSave: (Record) -> Void
     
     @State private var hours: Int = 0
     @State private var minutes: Int = 0
@@ -84,8 +85,10 @@ struct EditSheetView: View {
                 .cornerRadius(25)
                 
                 Button("Save Time") {
-                    record.timeInSeconds = hours * 3600 + minutes * 60 + seconds
-                    record.date = selectedDate
+                    var updatedRecord = record
+                    updatedRecord.timeInSeconds = hours * 3600 + minutes * 60 + seconds
+                    updatedRecord.date = selectedDate
+                    onSave(updatedRecord)
                     withAnimation(.spring()) {
                         selectedRecord = nil
                     }
